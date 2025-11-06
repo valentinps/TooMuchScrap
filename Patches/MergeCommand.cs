@@ -98,7 +98,7 @@ namespace ScrapMerging
                     if (processed.Contains(objId))
                         continue;
 
-                    if (totalValue + obj.scrapValue > ScrapMerging.MaxMerge.Value)
+                    if (totalValue + obj.scrapValue > ScrapMerging.MaxMergeValue.Value)
                         continue; // skip merging this one if it would exceed the limit
 
                     totalValue += obj.scrapValue;

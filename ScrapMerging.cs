@@ -17,7 +17,7 @@ namespace ScrapMerging
         public const string PluginVersion = "1.0.0";
 
         public static ConfigEntry<float> MergeDistance { get; private set; } = null!;
-        public static ConfigEntry<float> MaxMerge { get; private set; } = null!;
+        public static ConfigEntry<float> MaxMergeValue { get; private set; } = null!;
         public static ConfigEntry<string> MergeableItems { get; private set; } = null!;
 
         private static HashSet<string>? _mergeableItemsCache = null;
@@ -26,9 +26,9 @@ namespace ScrapMerging
         {
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
-            MergeDistance = Config.Bind("General", "Merge Distance", 1F, "Maximum distance at which scrap will merge.");
-            MaxMerge = Config.Bind("General", "MaxMerge", 200f, "Maximum merged scrap value.");
-            MergeableItems = Config.Bind("General", "Mergeable Items",
+            MergeDistance = Config.Bind("General", "MergeDistance", 1F, "Maximum distance at which scrap will merge.");
+            MaxMergeValue = Config.Bind("General", "MaxMergeValue", 200f, "Maximum merged scrap value.");
+            MergeableItems = Config.Bind("General", "MergeableItems",
                 "HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone",
                 "Comma-separated list of item names that can be merged.");
 
