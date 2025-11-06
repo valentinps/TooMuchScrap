@@ -48,6 +48,7 @@ namespace TooMuchScrap
 
             // Iterate over all scrap and call the existing MergeScrap logic.
             // Using a processed set ensures deterministic behavior regardless of iteration order.
+            int destroyedCount = 0;
             foreach (GrabbableObject __instance in scrapInShip)
             {
                 if (__instance is null)
@@ -113,13 +114,14 @@ namespace TooMuchScrap
                     if (obj is null) continue;
                     processed.Add(obj.GetInstanceID());
                     Object.Destroy(obj.gameObject);
+                    destroyedCount++;
                 }
 
                 // Mark the survivor as processed so it won't be source for another merge pass
                 processed.Add(id);
             }
 
-            ChatCommandAPI.ChatCommandAPI.Print("Scrap merged.");
+            ChatCommandAPI.ChatCommandAPI.Print($"Scrap merged. Total destroyed: {destroyedCount}");
 
             return true;
         }

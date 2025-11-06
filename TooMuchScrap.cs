@@ -14,7 +14,7 @@ namespace TooMuchScrap
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "valentinps";
         public const string PluginName = "TooMuchScrap";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.0.1";
 
         public static ConfigEntry<float> MergeDistance { get; private set; } = null!;
         public static ConfigEntry<float> MaxMergeValue { get; private set; } = null!;
@@ -29,7 +29,7 @@ namespace TooMuchScrap
             MergeDistance = Config.Bind("General", "MergeDistance", 1F, "Maximum distance at which scrap will merge.");
             MaxMergeValue = Config.Bind("General", "MaxMergeValue", 200f, "Maximum merged scrap value.");
             MergeableItems = Config.Bind("General", "MergeableItems",
-                "HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone",
+                "HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone,RibcageBone",
                 "Comma-separated list of item names that can be merged.");
 
             _ = new MergeCommand();

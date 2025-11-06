@@ -1,7 +1,7 @@
 {
     "name": "TooMuchScrap",
     "author": "abu",
-    "version_number": "1.0.0",
+    "version_number": "1.0.1",
     "website_url": "https://github.com/valentinps/TooMuchScrap",
     "description": "A small mod for Lethal Company that reduces onboard item clutter and lag by letting players merge items of the same type with a single command.",
     "dependencies": [
