@@ -3,10 +3,10 @@ using System.Linq;
 using ChatCommandAPI;
 using GameNetcodeStuff;
 using UnityEngine;
-using ScrapMerging;
+using TooMuchScrap;
 using BepInEx.Configuration;
 
-namespace ScrapMerging
+namespace TooMuchScrap
 {
     // Inherit from Command from the ChatCommandAPI
     public class MergeCommand : Command
@@ -30,10 +30,10 @@ namespace ScrapMerging
             }
 
             // Clear cache to get fresh settings from config
-            ScrapMerging.ReloadConfig();
+            TooMuchScrap.ReloadConfig();
             
             // Get the set of mergeable items from config
-            HashSet<string> mergeableItems = ScrapMerging.GetMergeableItems();
+            HashSet<string> mergeableItems = TooMuchScrap.GetMergeableItems();
 
             // Find all GrabbableObjects currently loaded in the game
             GrabbableObject[] allObjects = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None);
@@ -76,7 +76,7 @@ namespace ScrapMerging
                 if (mergeCandidates.Length < 2) { continue; }
 
                 GrabbableObject[] mergableObjects = mergeCandidates.Where(
-                    x => Vector3.Distance(x.transform.position, __instance.transform.position) < ScrapMerging.MergeDistance.Value
+                    x => Vector3.Distance(x.transform.position, __instance.transform.position) < TooMuchScrap.MergeDistance.Value
                 ).ToArray();
                 if (mergableObjects.Length < 2) { continue; }
 
@@ -98,7 +98,7 @@ namespace ScrapMerging
                     if (processed.Contains(objId))
                         continue;
 
-                    if (totalValue + obj.scrapValue > ScrapMerging.MaxMergeValue.Value)
+                    if (totalValue + obj.scrapValue > TooMuchScrap.MaxMergeValue.Value)
                         continue; // skip merging this one if it would exceed the limit
 
                     totalValue += obj.scrapValue;

@@ -6,14 +6,14 @@ using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 
-namespace ScrapMerging
+namespace TooMuchScrap
 {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
-    public class ScrapMerging : BaseUnityPlugin
+    public class TooMuchScrap : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
-        public const string PluginAuthor = "GiGaGon";
-        public const string PluginName = "ScrapMerging";
+        public const string PluginAuthor = "valentinps";
+        public const string PluginName = "TooMuchScrap";
         public const string PluginVersion = "1.0.0";
 
         public static ConfigEntry<float> MergeDistance { get; private set; } = null!;
@@ -64,7 +64,7 @@ namespace ScrapMerging
             if (BepInEx.Bootstrap.Chainloader.ManagerObject == null)
                 return;
 
-            var pluginInstance = BepInEx.Bootstrap.Chainloader.ManagerObject.GetComponent<ScrapMerging>();
+            var pluginInstance = BepInEx.Bootstrap.Chainloader.ManagerObject.GetComponent<TooMuchScrap>();
             if (pluginInstance == null)
                 return;
 
