@@ -363,5 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 ScrapMerging_builds/
+zips/
 
 TooMuchScrap.zip
+build.sh

@@ -1,9 +1,9 @@
 {
     "name": "TooMuchScrap",
     "author": "abu",
-    "version_number": "1.0.1",
+    "version_number": "1.0.2",
     "website_url": "https://github.com/valentinps/TooMuchScrap",
-    "description": "A small mod for Lethal Company that reduces onboard item clutter and lag by letting players merge items of the same type with a single command.",
+    "description": "A small mod for Lethal Company that reduces onboard item clutter and lag by letting players merge items of the same type with a /merge chat command.",
     "dependencies": [
         "BepInEx-BepInExPack-5.4.2100",
         "baer1-ChatCommandAPI-0.3.1"

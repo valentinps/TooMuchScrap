@@ -70,9 +70,10 @@ namespace TooMuchScrap
 
                 GrabbableObject[] mergeCandidates = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None)
                     .Where(x => x != null
-                             && x.isInShipRoom 
-                             && x.itemProperties.isScrap 
-                             && x.name == __instance.name)
+                             && x.isInShipRoom
+                             && x.itemProperties.isScrap
+                             && x.name == __instance.name
+                             && !x.isHeld) // ensure the item is not currently held by a player
                     .ToArray();
                 if (mergeCandidates.Length < 2) { continue; }
 
@@ -121,7 +122,7 @@ namespace TooMuchScrap
                 processed.Add(id);
             }
 
-            ChatCommandAPI.ChatCommandAPI.Print($"Scrap merged. Total destroyed: {destroyedCount}");
+            ChatCommandAPI.ChatCommandAPI.Print($"Scrap merged. Total scrap removed: {destroyedCount}");
 
             return true;
         }

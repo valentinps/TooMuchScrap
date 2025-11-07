@@ -20,10 +20,14 @@ Only the game host can run the `/merge` command — clients cannot execute it. C
 
 - "MergeDistance": max distance (units) between items to consider them for merging.
 - "MaxMergeValue": maximum numeric value an item can have after merging (merged totals are clamped to this value).
-- "MergeItems": comma separated list of internal item names that should be considered for merging. Default: `HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone,RibcageBone`. These are new items from the Moon Dine that typically spawn many copies and cause the most lag, so they are included by default. Edit this comma-separated list to add or remove internal item names.
+- "MergeItems": comma separated list of internal item names that should be considered for merging. Default: `HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone,RibcageBone` (Dine items). Edit this comma-separated list to add or remove items.
 
 You do not need to restart the game after editing the config.
 
+If you cannot find the internal item name for a scrap you can use the `/itemnames` included in the ShipSort mod from baer1 to list the items on ship
+
 ## Credits
+
 Heavily based on work by MeGaGiGaGon (ScrapMerging) — credit to MeGaGiGaGon for inspiration and reference implementation ideas.
+
 Credit to baer1 for the ChatCommandAPI package used for command handling.
