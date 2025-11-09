@@ -20,7 +20,7 @@ Only the game host can run the `/merge` command — clients cannot execute it. C
 
 - "MergeDistance": max distance (units) between items to consider them for merging.
 - "MaxMergeValue": maximum numeric value an item can have after merging (merged totals are clamped to this value).
-- "MergeItems": comma separated list of internal item names that should be considered for merging. Default: `HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone,RibcageBone` (Dine items). Edit this comma-separated list to add or remove items.
+- "MergeItems": comma separated list of internal item names that should be considered for merging. Default: `HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone,RibcageBone,Ear,Tongue` (Dine items). Edit this comma-separated list to add or remove items.
 
 You do not need to restart the game after editing the config.
 
