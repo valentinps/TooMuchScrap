@@ -29,5 +29,3 @@ If you cannot find the internal item name for a scrap you can use the `/itemname
 ## Credits
 
 Heavily based on work by MeGaGiGaGon (ScrapMerging) — credit to MeGaGiGaGon for inspiration and reference implementation ideas.
-
-Credit to baer1 for the ChatCommandAPI package used for command handling.

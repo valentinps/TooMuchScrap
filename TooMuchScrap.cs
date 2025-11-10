@@ -5,6 +5,8 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using TooMuchScrap;
+using UnityEngine.UIElements.UIR;
 
 namespace TooMuchScrap
 {
@@ -12,13 +14,14 @@ namespace TooMuchScrap
     public class TooMuchScrap : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
-        public const string PluginAuthor = "valentinps";
-        public const string PluginName = "TooMuchScrap";
-        public const string PluginVersion = "1.0.3";
+        public const string PluginAuthor = "abu";
+        public const string PluginName = "TooMuchScrap_NoDependency";
+        public const string PluginVersion = "1.1.0";
 
         public static ConfigEntry<float> MergeDistance { get; private set; } = null!;
         public static ConfigEntry<float> MaxMergeValue { get; private set; } = null!;
         public static ConfigEntry<string> MergeableItems { get; private set; } = null!;
+        public static ConfigEntry<string> PrefixChar { get; private set; } = null!;
 
         private static HashSet<string>? _mergeableItemsCache = null;
 
@@ -31,8 +34,7 @@ namespace TooMuchScrap
             MergeableItems = Config.Bind("General", "MergeableItems",
                 "HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone,RibcageBone,Ear,Tongue",
                 "Comma-separated list of item names that can be merged.");
-
-            _ = new MergeCommand();
+            PrefixChar = Config.Bind("General", "PrefixChar", "/", "Character that prefixes chat commands.");
         }
 
         public static HashSet<string> GetMergeableItems()
@@ -71,5 +73,33 @@ namespace TooMuchScrap
             pluginInstance.Config.Reload(); // Re-read from disk
             ClearCache(); // Clear cached parsed data
         }
+    }
+}
+
+[HarmonyPatch(typeof(HUDManager))]
+internal class MergeCommandPatch
+{
+    [HarmonyPatch("AddTextToChatOnServer")]
+    [HarmonyPrefix]
+
+    public static bool AddTextToChatOnServer_Prefix(HUDManager __instance, ref string chatMessage)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(chatMessage, $@"^{TooMuchScrap.TooMuchScrap.PrefixChar.Value}merge(?:\s+(-?\d+))?$");
+        if (match.Success)
+        {
+            int destroyedCount = MergeClass.Merge(out string? error);
+            if (destroyedCount >= 0)
+            {
+                __instance.AddTextToChatOnServer($"Total scrap removed: {destroyedCount}");
+                return false;
+            }
+            else
+            {
+                // Show error message in chat
+                __instance.AddTextToChatOnServer($"[TooMuchScrap] {error}");
+                return false;
+            }
+        }
+        return true;
     }
 }
