@@ -2,6 +2,8 @@
 
 A small mod for Lethal Company that reduces onboard item clutter and lag by letting players merge items of the same type with a single command. Use the `/merge` command to combine nearby identical items into a single instance, summing their values up to a configurable cap.
 
+## If you had the mod before 1.2.0 or if you have ChatCommandAPI change the command prefix in one of the mods to avoid conflicts
+
 ## Warning (Host-only command)
 
 Only the game host can run the `/merge` command — clients cannot execute it. Clients do not need the mod installed to join; only the host/server needs the mod for merging to work.
