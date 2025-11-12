@@ -16,18 +16,24 @@ namespace TooMuchScrap
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "abu";
         public const string PluginName = "TooMuchScrap_NoDependency";
-        public const string PluginVersion = "1.1.0";
+        public const string PluginVersion = "1.2.0";
 
         public static ConfigEntry<float> MergeDistance { get; private set; } = null!;
         public static ConfigEntry<float> MaxMergeValue { get; private set; } = null!;
         public static ConfigEntry<string> MergeableItems { get; private set; } = null!;
         public static ConfigEntry<string> PrefixChar { get; private set; } = null!;
+        public static ConfigEntry<bool> CompanyOnly { get; private set; } = null!;
+        public static ConfigEntry<bool> AutoMerge { get; private set; } = null!;
 
         private static HashSet<string>? _mergeableItemsCache = null;
 
+        public static TooMuchScrap Instance = null!;
+
         private void Awake()
         {
+            Instance = this;
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+            
 
             MergeDistance = Config.Bind("General", "MergeDistance", 3F, "Maximum distance at which scrap will merge.");
             MaxMergeValue = Config.Bind("General", "MaxMergeValue", 200f, "Maximum merged scrap value.");
@@ -35,6 +41,9 @@ namespace TooMuchScrap
                 "HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone,RibcageBone,Ear,Tongue",
                 "Comma-separated list of item names that can be merged.");
             PrefixChar = Config.Bind("General", "PrefixChar", "/", "Character that prefixes chat commands.");
+            CompanyOnly = Config.Bind("General", "CompanyOnly", true, "Only allow merging of scrap at the company building.");
+            AutoMerge = Config.Bind("General", "AutoMerge", false, "Automatically merge scrap when going in orbit.");
+
         }
 
         public static HashSet<string> GetMergeableItems()
@@ -63,14 +72,7 @@ namespace TooMuchScrap
         }
         public static void ReloadConfig()
         {
-            if (BepInEx.Bootstrap.Chainloader.ManagerObject == null)
-                return;
-
-            var pluginInstance = BepInEx.Bootstrap.Chainloader.ManagerObject.GetComponent<TooMuchScrap>();
-            if (pluginInstance == null)
-                return;
-
-            pluginInstance.Config.Reload(); // Re-read from disk
+            Instance.Config.Reload();
             ClearCache(); // Clear cached parsed data
         }
     }
@@ -87,19 +89,39 @@ internal class MergeCommandPatch
         var match = System.Text.RegularExpressions.Regex.Match(chatMessage, $@"^{TooMuchScrap.TooMuchScrap.PrefixChar.Value}merge(?:\s+(-?\d+))?$");
         if (match.Success)
         {
+            TooMuchScrap.TooMuchScrap.ReloadConfig();
             int destroyedCount = MergeClass.Merge(out string? error);
             if (destroyedCount >= 0)
             {
-                __instance.AddTextToChatOnServer($"Total scrap removed: {destroyedCount}");
+                __instance.AddTextToChatOnServer($"[TMS] Total scrap removed: {destroyedCount}");
                 return false;
             }
             else
             {
                 // Show error message in chat
-                __instance.AddTextToChatOnServer($"[TooMuchScrap] {error}");
+                __instance.AddTextToChatOnServer($"[TMS] {error}");
                 return false;
             }
         }
         return true;
+    }
+}
+
+[HarmonyPatch(typeof(StartOfRound))]
+internal class AutoMergePatch
+{
+    [HarmonyPatch("SetShipReadyToLand")]
+    [HarmonyPostfix]
+    public static void SetShipReadyToLand_Postfix(StartOfRound __instance)
+    {
+        TooMuchScrap.TooMuchScrap.ReloadConfig();
+        if (TooMuchScrap.TooMuchScrap.AutoMerge.Value)
+        {
+            int destroyedCount = MergeClass.Merge(out string? error);
+            if (destroyedCount > 0)
+            {
+                HUDManager.Instance.AddTextToChatOnServer($"[TMS] Auto-merge complete. Total scrap removed: {destroyedCount}");
+            }
+        }
     }
 }

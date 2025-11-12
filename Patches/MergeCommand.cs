@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using GameNetcodeStuff;
 using UnityEngine;
@@ -14,12 +15,23 @@ namespace TooMuchScrap
             if (!IsHost(out error))
                 return -1;
 
-            TooMuchScrap.ReloadConfig();
+            if (TooMuchScrap.CompanyOnly.Value && !IsInCompanyBuilding(out error))
+                return -1;
             HashSet<string> mergeableItems = TooMuchScrap.GetMergeableItems();
 
             GrabbableObject[] scrapInShip = GetScrapInShip();
             int destroyedCount = MergeAllScrap(scrapInShip, mergeableItems);
             return destroyedCount;
+        }
+        private static bool IsInCompanyBuilding(out string? error)
+        {
+            if (RoundManager.Instance.currentLevel.sceneName != "CompanyBuilding")
+            {
+                error = "The /merge command can only be used in the Company Building. (You can change this in the config)";
+                return false;
+            }
+            error = null;
+            return true;
         }
 
         private static bool IsHost(out string? error)
