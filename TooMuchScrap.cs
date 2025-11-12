@@ -16,7 +16,7 @@ namespace TooMuchScrap
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "abu";
         public const string PluginName = "TooMuchScrap";
-        public const string PluginVersion = "1.2.0";
+        public const string PluginVersion = "1.2.2";
 
         public static ConfigEntry<float> MergeDistance { get; private set; } = null!;
         public static ConfigEntry<float> MaxMergeValue { get; private set; } = null!;

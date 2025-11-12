@@ -98,7 +98,7 @@ namespace TooMuchScrap
                 if (obj == null || processed.Contains(obj.GetInstanceID()) || obj.GetInstanceID() == sourceId)
                     continue;
 
-                if (totalValue + obj.scrapValue > TooMuchScrap.MaxMergeValue.Value)
+                if (TooMuchScrap.MaxMergeValue.Value != -1 && totalValue + obj.scrapValue > TooMuchScrap.MaxMergeValue.Value)
                     continue;
 
                 totalValue += obj.scrapValue;
