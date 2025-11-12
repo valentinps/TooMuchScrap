@@ -21,13 +21,12 @@ Only the game host can run the `/merge` command — clients cannot execute it. C
 - "MergeDistance": max distance (units) between items to consider them for merging.
 - "MaxMergeValue": maximum numeric value an item can have after merging (merged totals are clamped to this value).
 - "MergeItems": comma separated list of internal item names that should be considered for merging. Default: `HeartContainer,SeveredHandLOD0,SeveredFootLOD0,SeveredThighLOD0,Bone,RibcageBone,Ear,Tongue` (Dine items). Edit this comma-separated list to add or remove items.
+- "PrefixChar": Command prefix (Requires game restart after changes)
+- "CompanyOnly": true/false — Whether to merge items only while at the Company building.
+- "AutoMerge": true/false — Whether to automatically merge items after leaving a moon. Note: if "CompanyOnly" is True, auto-merge will only run when at the Company building.
 
 You do not need to restart the game after editing the config.
-
-If you cannot find the internal item name for a scrap you can use the `/itemnames` included in the ShipSort mod from baer1 to list the items on ship
 
 ## Credits
 
 Heavily based on work by MeGaGiGaGon (ScrapMerging) — credit to MeGaGiGaGon for inspiration and reference implementation ideas.
-
-Credit to baer1 for the ChatCommandAPI package used for command handling.

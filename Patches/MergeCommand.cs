@@ -1,130 +1,134 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using ChatCommandAPI;
 using GameNetcodeStuff;
 using UnityEngine;
-using TooMuchScrap;
-using BepInEx.Configuration;
 
 namespace TooMuchScrap
 {
-    // Inherit from Command from the ChatCommandAPI
-    public class MergeCommand : Command
+    public static class MergeClass
     {
-        // Sets the command name that users will type in chat (e.g., /merge)
-        public override string Name => "merge";
-
-        // Sets the description for the /help command
-        public override string Description => "Immediately merges all eligible scrap in the ship without needing to drop them.";
-
-        // The logic that runs when the command is invoked
-        public override bool Invoke(string[] args, Dictionary<string, string> kwargs, out string? error)
+        public static int Merge(out string? error)
         {
             error = null;
 
-            // Chat commands that modify game state should typically only run on the host/server.
+            if (!IsHost(out error))
+                return -1;
+
+            if (TooMuchScrap.CompanyOnly.Value && !IsInCompanyBuilding(out error))
+                return -1;
+            HashSet<string> mergeableItems = TooMuchScrap.GetMergeableItems();
+
+            GrabbableObject[] scrapInShip = GetScrapInShip();
+            int destroyedCount = MergeAllScrap(scrapInShip, mergeableItems);
+            return destroyedCount;
+        }
+        private static bool IsInCompanyBuilding(out string? error)
+        {
+            if (RoundManager.Instance.currentLevel.sceneName != "CompanyBuilding")
+            {
+                error = "The /merge command can only be used in the Company Building. (You can change this in the config)";
+                return false;
+            }
+            error = null;
+            return true;
+        }
+
+        private static bool IsHost(out string? error)
+        {
             if (!GameNetworkManager.Instance.localPlayerController.IsHost)
             {
                 error = "Only the host can execute the /merge command to ensure proper networking.";
                 return false;
             }
+            error = null;
+            return true;
+        }
 
-            // Clear cache to get fresh settings from config
-            TooMuchScrap.ReloadConfig();
-            
-            // Get the set of mergeable items from config
-            HashSet<string> mergeableItems = TooMuchScrap.GetMergeableItems();
-
-            // Find all GrabbableObjects currently loaded in the game
-            GrabbableObject[] allObjects = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None);
-
-            // Filter for scrap items that are inside the ship
-            GrabbableObject[] scrapInShip = allObjects
+        private static GrabbableObject[] GetScrapInShip()
+        {
+            return Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None)
                 .Where(x => x != null && x.itemProperties.isScrap && x.isInShipRoom)
                 .ToArray();
+        }
 
-            // Keep track of processed/destroyed objects so we don't double-count or reprocess them.
+        private static int MergeAllScrap(GrabbableObject[] scrapInShip, HashSet<string> mergeableItems)
+        {
             HashSet<int> processed = new HashSet<int>();
-
-            // Iterate over all scrap and call the existing MergeScrap logic.
-            // Using a processed set ensures deterministic behavior regardless of iteration order.
             int destroyedCount = 0;
-            foreach (GrabbableObject __instance in scrapInShip)
+
+            foreach (GrabbableObject obj in scrapInShip)
             {
-                if (__instance is null)
+                if (obj == null || processed.Contains(obj.GetInstanceID()))
                     continue;
 
-                int id = __instance.GetInstanceID();
-                if (processed.Contains(id))
+                string itemName = obj.name.Replace("(Clone)", "");
+                if (!mergeableItems.Contains(itemName))
                     continue;
 
-                string itemName = __instance.name.Replace("(Clone)", "");
-                
-                // Check if this item is in the mergeable list
-                if (!__instance.itemProperties.isScrap
-                     || !__instance.isInShipRoom 
-                     || !mergeableItems.Contains(itemName))
-                {
-                    continue;
-                }
-
-                GrabbableObject[] mergeCandidates = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None)
-                    .Where(x => x != null
-                             && x.isInShipRoom
-                             && x.itemProperties.isScrap
-                             && x.name == __instance.name
-                             && !x.isHeld) // ensure the item is not currently held by a player
-                    .ToArray();
-                if (mergeCandidates.Length < 2) { continue; }
-
-                GrabbableObject[] mergableObjects = mergeCandidates.Where(
-                    x => Vector3.Distance(x.transform.position, __instance.transform.position) < TooMuchScrap.MergeDistance.Value
-                ).ToArray();
-                if (mergableObjects.Length < 2) { continue; }
-
-                // Sort by value (optional, ensures predictable merges)
-                List<GrabbableObject> toMerge = mergableObjects.OrderBy(x => x.scrapValue).ToList();
-
-                int totalValue = __instance.scrapValue;
-                List<GrabbableObject> merged = new List<GrabbableObject> { __instance };
-
-                foreach (var obj in toMerge)
-                {
-                    if (obj is null)
-                        continue;
-
-                    int objId = obj.GetInstanceID();
-                    if (objId == id)
-                        continue;
-
-                    if (processed.Contains(objId))
-                        continue;
-
-                    if (totalValue + obj.scrapValue > TooMuchScrap.MaxMergeValue.Value)
-                        continue; // skip merging this one if it would exceed the limit
-
-                    totalValue += obj.scrapValue;
-                    merged.Add(obj);
-                }
-
-                __instance.SetScrapValue(totalValue);
-
-                // Destroy only those that were merged and mark them processed
-                foreach (var obj in merged.Where(x => x != __instance))
-                {
-                    if (obj is null) continue;
-                    processed.Add(obj.GetInstanceID());
-                    Object.Destroy(obj.gameObject);
-                    destroyedCount++;
-                }
-
-                // Mark the survivor as processed so it won't be source for another merge pass
-                processed.Add(id);
+                int destroyed = MergeNearbyScrap(obj, mergeableItems, processed);
+                destroyedCount += destroyed;
             }
 
-            ChatCommandAPI.ChatCommandAPI.Print($"Scrap merged. Total scrap removed: {destroyedCount}");
+            return destroyedCount;
+        }
 
-            return true;
+        private static int MergeNearbyScrap(GrabbableObject source, HashSet<string> mergeableItems, HashSet<int> processed)
+        {
+            int destroyedCount = 0;
+            int sourceId = source.GetInstanceID();
+
+            GrabbableObject[] mergeCandidates = FindMergeCandidates(source);
+            if (mergeCandidates.Length < 2)
+                return 0;
+
+            GrabbableObject[] nearby = mergeCandidates
+                .Where(x => Vector3.Distance(x.transform.position, source.transform.position) < TooMuchScrap.MergeDistance.Value)
+                .ToArray();
+
+            if (nearby.Length < 2)
+                return 0;
+
+            List<GrabbableObject> toMerge = nearby.OrderBy(x => x.scrapValue).ToList();
+            int totalValue = source.scrapValue;
+            List<GrabbableObject> merged = new List<GrabbableObject> { source };
+
+            foreach (var obj in toMerge)
+            {
+                if (obj == null || processed.Contains(obj.GetInstanceID()) || obj.GetInstanceID() == sourceId)
+                    continue;
+
+                if (totalValue + obj.scrapValue > TooMuchScrap.MaxMergeValue.Value)
+                    continue;
+
+                totalValue += obj.scrapValue;
+                merged.Add(obj);
+            }
+
+            source.SetScrapValue(totalValue);
+
+            foreach (var obj in merged.Where(x => x != source))
+            {
+                if (obj == null) continue;
+                processed.Add(obj.GetInstanceID());
+                Object.Destroy(obj.gameObject);
+                destroyedCount++;
+            }
+
+            processed.Add(sourceId);
+            return destroyedCount;
+        }
+
+        private static GrabbableObject[] FindMergeCandidates(GrabbableObject source)
+        {
+            return Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None)
+                .Where(x =>
+                    x != null &&
+                    x.isInShipRoom &&
+                    x.itemProperties.isScrap &&
+                    x.name == source.name &&
+                    !x.isHeld)
+                .ToArray();
         }
     }
 }
